@@ -3,7 +3,21 @@ const connectDB = require('./config/database')
 const app = express()
 const User = require('./models/user')
 
+
+// express.json() returns the JSON body parser a middleware function. which reads the json from req and convert it to javascript object and attach it to request
+
+
+// Register the JSON body parser middleware for "/post" signup route
+app.post("/signup",express.json());
+
+
 app.post('/signup', async (req, res) => {
+  console.log(req)
+
+  // await express.json() This does not parse the request body. Why?
+
+
+  console.log(req.body)
   const userObj = {
     firstName: "Puneet",
     lastName: "Vishnoi",
@@ -12,7 +26,7 @@ app.post('/signup', async (req, res) => {
   }
 
   // creating a new instance of the user model and passing userObj
-  const user = new User(userObj)
+  const user = new User(req.body)
 
   try {
     // data is saved on to the database

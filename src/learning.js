@@ -157,3 +157,10 @@ connectDB()
 })
 
 
+// JSON (JavaScript Object Notation)
+// Definition: A string format for representing structured data (text-based).
+// Used for: Data transmission (e.g., APIs, config files, inter-language communication).
+
+// Simple Object (in JavaScript or other languages)
+// Definition: An in-memory data structure (e.g., a hash map or dictionary in code).
+// Used for: Manipulating data during runtime inside a program.
