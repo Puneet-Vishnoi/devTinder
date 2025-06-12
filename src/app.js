@@ -1,12 +1,13 @@
 const express = require('express')
 const connectDB = require('./config/database')
+const validateSignUpData = require('./utils/validation')
 const app = express()
 const User = require('./models/user')
 
 // Register the JSON body parser middleware for "/" -> all route
 app.use("/", express.json());
 
-app.post('/signup', async (req, res) => {
+app.post('/signup', validateSignUpData, async (req, res) => {
   // creating a new instance of the user model and passing userObj
   const user = new User(req.body)
 
