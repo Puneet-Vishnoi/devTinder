@@ -37,12 +37,28 @@ app.get("/user", async (req, res) => {
 })
 
 // Patch user by id
-app.patch("/user", async (req, res) => {
-  const id = req.body.id;
+app.patch("/user/:userId", async (req, res) => {
+  const id = req.params.userId;
 
   const data = req.body;
 
+  const ALLOWED_UPDATES = [
+    "photourl", "about", "gender", "age", "skills"
+  ]
+
+  const isUpdateAllowed = Object.keys(data).every((k)=> ALLOWED_UPDATES.includes(k))
+
+
   try {
+    
+    if (!isUpdateAllowed){
+      res.status(404).send("update query is not allowed")
+      return
+    }
+    if (req.body.skills.length>10) {
+      res.status(404).send("atmost 10 skills is allowed")
+      return
+    }
     const updatedUser = await User.findByIdAndUpdate({ _id: id }, data, { new: true, runValidators: true })
     // Returns the updated document if new: true is specified, or the original document if new: false (default).
     // If no document is found with the specified id, it returns null.
