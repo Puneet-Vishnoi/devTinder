@@ -2,12 +2,14 @@ const express = require('express')
 const connectDB = require('./config/database')
 const validateSignUpData = require('./utils/validation')
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser')
 const app = express()
 const User = require('./models/user')
 
 
 // Register the JSON body parser middleware for "/" -> all route
 app.use("/", express.json());
+app.use("/", cookieParser())
 
 const saltRounds = 10;
 
@@ -44,29 +46,30 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({emailId: email})
     
     if(!user){
-      res.status(404).send("email is not found")
+      res.status(404).send("Invalid Credentials")
       return
     }
     const {firstName, lastName, password: hash, emailId, skills, age, gender, photourl, about} = user
     
     // Load hash from your password DB.
-    bcrypt.compare(myPlaintextPassword, hash, function (err, result) {
-   
-      if (err) {
-        console.error("Error comparing password hash:", err);
-        return res.status(500).send("Something went wrong during login");
-      }
-
-      if (!result) {
-        return res.status(400).send("Incorrect password");
-      }
-
-      return res.send({firstName, lastName, emailId, skills, about, photourl, age, gender})
-    });
+    const isValidPassword = await bcrypt.compare(myPlaintextPassword, hash);
+    if (!isValidPassword){
+        return res.status(400).send("Invalid Credentials");
+    }
+    res.cookie("token", "kldjlkzjkjjbhuirehjcjsklfndrejjklzcxnlc kigfrh")
+    res.send({firstName, lastName, emailId, skills, about, photourl, age, gender})
   }
   catch (err) {
     res.status(400).send("Error login the user: ", err?.message)
   }
+})
+
+app.get("/profile", async (req, res)=>{
+  cookie = req.cookies
+
+  console.log(cookie)
+
+  res.send(cookie.token)
 })
 
 // Get user by email
