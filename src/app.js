@@ -43,7 +43,7 @@ app.patch("/user", async (req, res) => {
   const data = req.body;
 
   try {
-    const updatedUser = await User.findByIdAndUpdate({ _id: id }, data, { new: true })
+    const updatedUser = await User.findByIdAndUpdate({ _id: id }, data, { new: true, runValidators: true })
     // Returns the updated document if new: true is specified, or the original document if new: false (default).
     // If no document is found with the specified id, it returns null.
     if (updatedUser === null){
@@ -52,7 +52,7 @@ app.patch("/user", async (req, res) => {
     res.send(updatedUser)
   }
   catch (err) {
-    res.status(500).send("Something went wrong");
+    res.status(500).send("update failed: "+ err.message);
   }
 
 })
