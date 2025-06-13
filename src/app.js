@@ -44,7 +44,6 @@ app.post('/signup', validateSignUpData, async (req, res) => {
 app.post("/login", async (req, res) => {
 
   const { emailId: email, password: myPlaintextPassword } = req.body
-  console.log(email, myPlaintextPassword)
   try {
     const user = await User.findOne({ emailId: email })
 
@@ -55,12 +54,14 @@ app.post("/login", async (req, res) => {
     const { firstName, lastName, password: hash, emailId } = user
 
     // Load hash from your password DB.
-    const isValidPassword = await bcrypt.compare(myPlaintextPassword, hash);
+    const isValidPassword = user.validatePassword(myPlaintextPassword)
     if (!isValidPassword) {
       return res.status(400).send("Invalid Credentials");
     }
-    const token = await JsonWebToken.sign({ _id: user._id }, "DEV@Tinder007$SecretKey", { expiresIn: '0h' });
-    console.log(token)
+
+    // offloads to user schema as helper function
+    const token = await user.getJWT();
+    
     res.cookie("token", token, {expires: new Date(Date.now()+ 3*3600000)})// expires in 3 hr
     res.send({ firstName, lastName, emailId })
   }
