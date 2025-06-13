@@ -3,11 +3,8 @@ const connectDB = require('./config/database')
 const validateSignUpData = require('./utils/validation')
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser')
-const JsonWebToken = require('jsonwebtoken');
-const authMiddleware = require('./utils/authMiddleware');
-
 const app = express()
-const User = require('./models/user');
+const User = require('./models/user')
 
 
 // Register the JSON body parser middleware for "/" -> all route
@@ -36,7 +33,7 @@ app.post('/signup', validateSignUpData, async (req, res) => {
     await user.save();
     res.send("User added succesfully")
   } catch (err) {
-    res.status(400).send("Error saving the user:" + err?.message)
+    res.status(400).send("Error saving the user:" + err.message)
   }
 })
 
@@ -46,54 +43,37 @@ app.post("/login", async (req, res) => {
   const { emailId: email, password: myPlaintextPassword } = req.body
   console.log(email, myPlaintextPassword)
   try {
-    const user = await User.findOne({ emailId: email })
-
-    if (!user) {
+    const user = await User.findOne({emailId: email})
+    
+    if(!user){
       res.status(404).send("Invalid Credentials")
       return
     }
-    const { firstName, lastName, password: hash, emailId } = user
-
+    const {firstName, lastName, password: hash, emailId, skills, age, gender, photourl, about} = user
+    
     // Load hash from your password DB.
     const isValidPassword = await bcrypt.compare(myPlaintextPassword, hash);
-    if (!isValidPassword) {
-      return res.status(400).send("Invalid Credentials");
+    if (!isValidPassword){
+        return res.status(400).send("Invalid Credentials");
     }
-    const token = await JsonWebToken.sign({ _id: user._id }, "DEV@Tinder007$SecretKey", { expiresIn: '0h' });
-    console.log(token)
-    res.cookie("token", token, {expires: new Date(Date.now()+ 3*3600000)})// expires in 3 hr
-    res.send({ firstName, lastName, emailId })
+    res.cookie("token", "kldjlkzjkjjbhuirehjcjsklfndrejjklzcxnlc kigfrh")
+    res.send({firstName, lastName, emailId, skills, about, photourl, age, gender})
   }
   catch (err) {
-    res.status(400).send("Error login the user: " + err?.message)
+    res.status(400).send("Error login the user: ", err?.message)
   }
 })
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", async (req, res)=>{
   cookie = req.cookies
 
-  try {
-    const { token } = cookie
-    if (!token) {
-      throw new Error("invalid token")
-    }
-    const decodedMessage = await JsonWebToken.verify(token, "DEV@Tinder007$SecretKey");
+  console.log(cookie)
 
-    const user = await User.findOne({ _id: decodedMessage._id });
-
-    if (!user) {
-      throw new Error("user doesn't exist")
-    }
-    res.send(user)
-  }
-  catch (err) {
-    res.status(401).send("Authorization Error: " + err?.message)
-  }
-
+  res.send(cookie.token)
 })
 
-// Post search another user by email
-app.post("/searchUser", authMiddleware, async (req, res) => {
+// Get user by email
+app.get("/user", async (req, res) => {
   const userEmail = req.body.emailId;
   try {
     const users = await User.find({ emailId: userEmail });
@@ -105,7 +85,7 @@ app.post("/searchUser", authMiddleware, async (req, res) => {
     res.send(users);
   }
   catch (err) {
-    res.status(400).send("Something went wrong"+ err?.message);
+    res.status(400).send("Something went wrong");
   }
 })
 
@@ -141,13 +121,13 @@ app.patch("/user/:userId", async (req, res) => {
     res.send(updatedUser)
   }
   catch (err) {
-    res.status(500).send("update failed: " + err?.message);
+    res.status(500).send("update failed: " + err.message);
   }
 
 })
 
 // Feed API - GET /feed - get all the users from the database
-app.get("/feed",  async (req, res) => {
+app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({})
     // empty filter will get us all the documents from user collection
